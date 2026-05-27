@@ -1,0 +1,5 @@
+<Solution>
+  <Project Path="GrafoLab.Core/GrafoLab.Core.csproj" />
+  <Project Path="GrafoLab.Tests/GrafoLab.Tests.csproj" />
+  <Project Path="GrafoLab.Wpf/GrafoLab.Wpf.csproj" />
+</Solution>

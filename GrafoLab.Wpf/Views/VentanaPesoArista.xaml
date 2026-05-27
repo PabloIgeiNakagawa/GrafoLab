@@ -1,0 +1,28 @@
+<Window x:Class="GrafoLab.Wpf.Views.VentanaPesoArista"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Arista" Height="200" Width="280"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="NoResize"
+        ShowInTaskbar="False">
+    <Grid Margin="10">
+        <Grid.RowDefinitions>
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+
+        <Label Grid.Row="0" Content="Peso (opcional):" Margin="0,0,0,4" />
+        <TextBox Grid.Row="1" x:Name="txtPeso" Margin="0,0,0,8" />
+
+        <CheckBox Grid.Row="2" x:Name="chkDirigida" Content="Es dirigida" Margin="0,0,0,12" />
+
+        <StackPanel Grid.Row="3" Orientation="Horizontal" HorizontalAlignment="Right"
+                    VerticalAlignment="Bottom">
+            <Button Content="Aceptar" Width="80" Margin="0,0,8,0" IsDefault="True"
+                    Click="BtnAceptar_Click" />
+            <Button Content="Cancelar" Width="80" IsCancel="True" />
+        </StackPanel>
+    </Grid>
+</Window>
