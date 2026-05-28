@@ -21,6 +21,12 @@ public class ArchivoJSON
         File.WriteAllText(archivoDestino, jsonParaGuardar);
     }
 
+    public static void GuardarGrafo(Grafo grafo, string archivoDestino)
+    {
+        var json = JsonSerializer.Serialize(grafo, _options);
+        File.WriteAllText(archivoDestino, json);
+    }
+
     public static Grafo? LeerGrafo(string archivo)
     {
         try

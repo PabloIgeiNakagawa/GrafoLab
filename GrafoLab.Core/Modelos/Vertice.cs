@@ -10,10 +10,10 @@ public class Vertice
     [JsonPropertyName("_vecinos")]
     public HashSet<int> Vecinos { get; private set; }
 
-    [JsonIgnore]
+    [JsonPropertyName("_x")]
     public double? X { get; set; }
 
-    [JsonIgnore]
+    [JsonPropertyName("_y")]
     public double? Y { get; set; }
 
     public Vertice()

@@ -9,6 +9,7 @@
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="Auto" />
+            <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
             <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
@@ -28,15 +29,25 @@
                 <RadioButton Content="Mover" Style="{StaticResource ModeRadioStyle}"
                              GroupName="Modo"
                              Checked="ModoRadio_Checked" Tag="Mover" />
-                <RadioButton Content="Eliminar" Style="{StaticResource ModeRadioStyle}"
+                <RadioButton Content="Eliminar vértice" Style="{StaticResource ModeRadioStyle}"
                              GroupName="Modo"
                              Checked="ModoRadio_Checked" Tag="Eliminar" />
+                <RadioButton Content="Eliminar arista" Style="{StaticResource ModeRadioStyle}"
+                             GroupName="Modo"
+                             Checked="ModoRadio_Checked" Tag="EliminarArista" />
+
+                <Button Content="Cargar" Click="BtnCargar_Click"
+                        Style="{StaticResource BotonEstilo}" Width="80" Margin="2" />
+                <Button Content="Guardar" Click="BtnGuardar_Click"
+                        Style="{StaticResource BotonEstilo}" Width="80" Margin="2" />
 
                 <ComboBox ItemsSource="{Binding AlgoritmosDisponibles}"
                           SelectedItem="{Binding AlgoritmoSeleccionado}"
                           DisplayMemberPath="Nombre"
                           MinWidth="240" Margin="2" />
                 <Button Content="Ejecutar" Click="BtnEjecutar_Click"
+                        Style="{StaticResource BotonEstilo}" Width="80" Margin="2" />
+                <Button Content="Ayuda" Click="BtnAyuda_Click"
                         Style="{StaticResource BotonEstilo}" Width="80" Margin="2" />
 
             </WrapPanel>
@@ -71,8 +82,27 @@
             </Grid>
         </Border>
 
+        <!-- Info seleccion -->
+        <Border Grid.Row="2" Padding="10,6" Background="#F0F8FF"
+                Visibility="{Binding InfoVisible, Converter={StaticResource BoolToVis}}">
+            <Grid>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                </Grid.ColumnDefinitions>
+
+                <TextBlock Grid.Column="0" Text="{Binding InfoTexto}" FontSize="13"
+                           VerticalAlignment="Center" Foreground="#333" />
+
+                <Button Grid.Column="1" Content="×" FontSize="14" FontWeight="Bold"
+                        Width="24" Height="24" Padding="0" Foreground="#666"
+                        Background="Transparent" BorderThickness="0"
+                        Cursor="Hand" Click="BtnCerrarInfo_Click" />
+            </Grid>
+        </Border>
+
         <!-- Canvas -->
-        <ScrollViewer Grid.Row="2" x:Name="scrollViewer"
+        <ScrollViewer Grid.Row="3" x:Name="scrollViewer"
                       HorizontalScrollBarVisibility="Auto"
                       VerticalScrollBarVisibility="Auto"
                       PreviewMouseWheel="ScrollViewer_PreviewMouseWheel"
@@ -87,7 +117,7 @@
                     <ScaleTransform x:Name="zoomTransform" ScaleX="1" ScaleY="1" />
                 </Grid.LayoutTransform>
 
-                <ItemsControl ItemsSource="{Binding AristasVisibles}" IsHitTestVisible="False">
+                <ItemsControl ItemsSource="{Binding AristasVisibles}">
                     <ItemsControl.ItemsPanel>
                         <ItemsPanelTemplate>
                             <Canvas />
@@ -95,7 +125,10 @@
                     </ItemsControl.ItemsPanel>
                     <ItemsControl.ItemTemplate>
                         <DataTemplate>
-                            <Canvas>
+                            <Canvas MouseDown="Arista_MouseDown" Cursor="Hand">
+                                <Line X1="{Binding X1}" Y1="{Binding Y1}"
+                                      X2="{Binding X2}" Y2="{Binding Y2}"
+                                      Stroke="Transparent" StrokeThickness="14" />
                                 <Line X1="{Binding X1}" Y1="{Binding Y1}"
                                       X2="{Binding X2}" Y2="{Binding Y2}"
                                       Stroke="#0086BE" StrokeThickness="2.5"
@@ -158,7 +191,7 @@
         </ScrollViewer>
 
         <!-- Status bar -->
-        <StatusBar Grid.Row="3" Background="#F0F0F0" Padding="5">
+        <StatusBar Grid.Row="4" Background="#F0F0F0" Padding="5">
             <StatusBarItem>
                 <TextBlock Text="{Binding StatusText}" />
             </StatusBarItem>

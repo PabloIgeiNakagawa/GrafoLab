@@ -1,0 +1,214 @@
+<Window x:Class="GrafoLab.Wpf.Views.VentanaAyuda"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="Ayuda - GrafoLab"
+        Width="700" Height="500"
+        WindowStartupLocation="CenterOwner"
+        ResizeMode="CanResize"
+        ShowInTaskbar="False">
+    <Window.Resources>
+        <Style x:Key="TituloSeccion" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="18" />
+            <Setter Property="FontWeight" Value="Bold" />
+            <Setter Property="Foreground" Value="#0086BE" />
+            <Setter Property="Margin" Value="0,0,0,8" />
+        </Style>
+        <Style x:Key="Subtitulo" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="14" />
+            <Setter Property="FontWeight" Value="SemiBold" />
+            <Setter Property="Foreground" Value="#333" />
+            <Setter Property="Margin" Value="0,12,0,4" />
+        </Style>
+        <Style x:Key="Parrafo" TargetType="TextBlock">
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="#444" />
+            <Setter Property="TextWrapping" Value="Wrap" />
+            <Setter Property="Margin" Value="0,0,0,6" />
+        </Style>
+        <Style x:Key="Codigo" TargetType="Border">
+            <Setter Property="Background" Value="#F5F5F5" />
+            <Setter Property="BorderBrush" Value="#DDD" />
+            <Setter Property="BorderThickness" Value="1" />
+            <Setter Property="CornerRadius" Value="4" />
+            <Setter Property="Padding" Value="12" />
+            <Setter Property="Margin" Value="0,0,0,12" />
+        </Style>
+        <Style x:Key="NavItem" TargetType="ListBoxItem">
+            <Setter Property="Cursor" Value="Hand" />
+            <Setter Property="Padding" Value="12,8" />
+            <Setter Property="FontSize" Value="13" />
+            <Setter Property="Foreground" Value="#333" />
+            <Setter Property="Background" Value="Transparent" />
+            <Setter Property="Template">
+                <Setter.Value>
+                    <ControlTemplate TargetType="ListBoxItem">
+                        <Border x:Name="bd" Background="{TemplateBinding Background}"
+                                Padding="{TemplateBinding Padding}"
+                                BorderThickness="0">
+                            <ContentPresenter />
+                        </Border>
+                        <ControlTemplate.Triggers>
+                            <Trigger Property="IsSelected" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#E0F0F8" />
+                                <Setter Property="Foreground" Value="#0086BE" />
+                                <Setter Property="FontWeight" Value="Bold" />
+                            </Trigger>
+                            <Trigger Property="IsMouseOver" Value="True">
+                                <Setter TargetName="bd" Property="Background" Value="#F0F0F0" />
+                            </Trigger>
+                        </ControlTemplate.Triggers>
+                    </ControlTemplate>
+                </Setter.Value>
+            </Setter>
+        </Style>
+    </Window.Resources>
+
+    <Grid>
+        <Grid.ColumnDefinitions>
+            <ColumnDefinition Width="180" />
+            <ColumnDefinition Width="Auto" />
+            <ColumnDefinition Width="*" />
+        </Grid.ColumnDefinitions>
+
+        <Border Grid.Column="0" Background="#F0F0F0" BorderBrush="#DDD" BorderThickness="0,0,1,0">
+            <Grid>
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="Auto" />
+                    <RowDefinition Height="*" />
+                </Grid.RowDefinitions>
+
+                <TextBlock Grid.Row="0" Text="Índice" FontSize="16" FontWeight="Bold"
+                           Foreground="#333" Margin="12,16,12,8" />
+
+                <ListBox Grid.Row="1" x:Name="navList"
+                         Background="Transparent" BorderThickness="0"
+                         ItemContainerStyle="{StaticResource NavItem}"
+                         SelectionChanged="NavList_SelectionChanged">
+                    <ListBoxItem Tag="secEditor">Editor</ListBoxItem>
+                    <ListBoxItem Tag="secCarga">Carga / Guardado</ListBoxItem>
+                    <ListBoxItem Tag="secAlgoritmos">Algoritmos</ListBoxItem>
+                </ListBox>
+            </Grid>
+        </Border>
+
+        <GridSplitter Grid.Column="1" Width="4" Background="#DDD"
+                      HorizontalAlignment="Stretch" VerticalAlignment="Stretch" />
+
+        <ScrollViewer Grid.Column="2" x:Name="scrollViewer" Padding="16">
+            <StackPanel>
+                <Border x:Name="secEditor" Style="{StaticResource Codigo}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource TituloSeccion}">Editor de grafos</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            El editor permite crear y modificar grafos visualmente mediante los siguientes modos:
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Seleccionar</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Modo por defecto. Permite hacer clic en los elementos sin modificarlos.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Agregar vértice</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Haga clic en cualquier lugar del lienzo para agregar un nuevo vértice.
+                            Los vértices se numeran automáticamente.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Agregar arista</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Seleccione un vértice origen, luego un vértice destino.
+                            Se abrirá un diálogo para ingresar el peso (opcional) y elegir si la arista es dirigida.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Mover</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Arrastre cualquier vértice para reposicionarlo en el lienzo.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Eliminar</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Haga clic en un vértice para eliminarlo junto con todas sus aristas.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Navegación</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            • <Bold>Zoom</Bold>: Use la rueda del mouse para acercar y alejar.
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            • <Bold>Pan</Bold>: Mantenga presionado el botón derecho y arrastre para desplazar el lienzo.
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="secCarga" Style="{StaticResource Codigo}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource TituloSeccion}">Carga y Guardado</TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Formato JSON</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Los archivos JSON deben seguir la estructura que se muestra a continuación:
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}" FontFamily="Consolas" xml:space="preserve">
+{
+  "_matrizAdyacencia": [
+    [ null, { "_peso": 5, "_dirigida": false }, null ],
+    [ { "_peso": 5, "_dirigida": false }, null, { "_peso": 10, "_dirigida": false } ],
+    [ null, { "_peso": 10, "_dirigida": false }, null ]
+  ],
+  "_vertices": [
+    { "_numVertice": 0, "_vecinos": [1], "_x": 1850, "_y": 2000 },
+    { "_numVertice": 1, "_vecinos": [0, 2], "_x": 2000, "_y": 1850 },
+    { "_numVertice": 2, "_vecinos": [1], "_x": 2150, "_y": 2000 }
+  ]
+}
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            • <Bold>_matrizAdyacencia</Bold>: Matriz cuadrada de N×N. Cada celda contiene null si no hay arista, o un objeto con _peso (opcional) y _dirigida.
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            • <Bold>_vertices</Bold>: Lista de vértices con _numVertice y _vecinos.
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            • <Bold>_x</Bold> y <Bold>_y</Bold> (opcional): Coordenadas de cada vértice. Si no están presentes, los vértices se ubican automáticamente en círculo.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Cargar grafo</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Haga clic en el botón "Cargar" de la barra de herramientas y seleccione un archivo JSON. Si el archivo no es válido, se mostrará un mensaje de error.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Guardar grafo</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Haga clic en el botón "Guardar" y elija dónde guardar el archivo JSON. Se persisten las aristas (con peso y dirección), los vértices y las posiciones de cada vértice.
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+
+                <Border x:Name="secAlgoritmos" Style="{StaticResource Codigo}">
+                    <StackPanel>
+                        <TextBlock Style="{StaticResource TituloSeccion}">Algoritmos</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Seleccione un algoritmo en el menú desplegable de la barra de herramientas y haga clic en "Ejecutar" para obtener el resultado.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Conjunto Dominante Mínimo - Goloso</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Algoritmo heurístico que encuentra un conjunto dominante de forma greedy. En cada paso selecciona el vértice con mayor cantidad de vecinos no dominados. Es rápido pero no garantiza la solución óptima.
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            <Bold>Complejidad:</Bold> O(n²), donde n es la cantidad de vértices.
+                        </TextBlock>
+
+                        <TextBlock Style="{StaticResource Subtitulo}">Conjunto Dominante Mínimo - BackTracking</TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            Algoritmo exacto que explora todas las combinaciones posibles de vértices para encontrar el conjunto dominante mínimo. Utiliza poda para descartar ramas que no pueden mejorar la mejor solución encontrada.
+                        </TextBlock>
+                        <TextBlock Style="{StaticResource Parrafo}">
+                            <Bold>Complejidad:</Bold> O(2ⁿ) en el peor caso. Recomendado solo para grafos pequeños (menos de 15-20 vértices).
+                        </TextBlock>
+                    </StackPanel>
+                </Border>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+</Window>

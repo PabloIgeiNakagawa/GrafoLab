@@ -1,7 +1,10 @@
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
+using GrafoLab.Core.Persistencia;
 using GrafoLab.Wpf.ViewModels;
+using GrafoLab.Wpf.Views;
+using Microsoft.Win32;
 
 namespace GrafoLab.Wpf;
 
@@ -61,6 +64,10 @@ public partial class MainWindow : Window
             _vm.AgregarVertice(Math.Max(0, pos.X - 18), Math.Max(0, pos.Y - 18));
             e.Handled = true;
         }
+        else if (_vm.ModoActual == ModoEditor.Seleccionar)
+        {
+            _vm.LimpiarSeleccion();
+        }
     }
 
     private void Vertice_MouseDown(object sender, MouseButtonEventArgs e)
@@ -72,6 +79,11 @@ public partial class MainWindow : Window
 
         switch (_vm.ModoActual)
         {
+            case ModoEditor.Seleccionar:
+                _vm.SeleccionarVertice(vertice);
+                e.Handled = true;
+                break;
+
             case ModoEditor.AgregarArista:
                 _vm.IniciarCreacionArista(vertice);
                 e.Handled = true;
@@ -91,6 +103,23 @@ public partial class MainWindow : Window
                 _vm.EliminarVertice(vertice);
                 e.Handled = true;
                 break;
+        }
+    }
+
+    private void Arista_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (sender is not FrameworkElement fe) return;
+        if (fe.DataContext is not AristaVM arista) return;
+
+        if (_vm.ModoActual == ModoEditor.Seleccionar)
+        {
+            _vm.SeleccionarArista(arista);
+            e.Handled = true;
+        }
+        else if (_vm.ModoActual == ModoEditor.EliminarArista)
+        {
+            _vm.EliminarArista(arista);
+            e.Handled = true;
         }
     }
 
@@ -195,4 +224,71 @@ public partial class MainWindow : Window
         _vm.CerrarBanner();
     }
 
+    private void BtnCargar_Click(object sender, RoutedEventArgs e)
+    {
+        if (_vm.VerticesVisibles.Count > 0)
+        {
+            var confirm = MessageBox.Show(
+                "Se descartará el grafo actual. ¿Está seguro?", "Cargar grafo",
+                MessageBoxButton.YesNo, MessageBoxImage.Warning);
+            if (confirm != MessageBoxResult.Yes) return;
+        }
+
+        var dialog = new OpenFileDialog
+        {
+            Filter = "Archivos JSON (*.json)|*.json|Todos los archivos (*.*)|*.*",
+            Title = "Cargar grafo"
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        var grafo = ArchivoJSON.LeerGrafo(dialog.FileName);
+        if (grafo == null)
+        {
+            MessageBox.Show("No se pudo leer el archivo. Verifique el formato.", "Error",
+                MessageBoxButton.OK, MessageBoxImage.Error);
+            return;
+        }
+
+        _vm.CargarDesdeGrafo(grafo);
+        MessageBox.Show("Grafo cargado correctamente.", "Exito",
+            MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void BtnGuardar_Click(object sender, RoutedEventArgs e)
+    {
+        var grafo = _vm.ConstruirGrafo();
+        if (grafo == null)
+        {
+            MessageBox.Show("No hay grafo para guardar.", "Aviso",
+                MessageBoxButton.OK, MessageBoxImage.Information);
+            return;
+        }
+
+        var dialog = new SaveFileDialog
+        {
+            Filter = "Archivos JSON (*.json)|*.json",
+            DefaultExt = ".json",
+            FileName = "Grafo.json",
+            Title = "Guardar grafo"
+        };
+
+        if (dialog.ShowDialog() != true) return;
+
+        ArchivoJSON.GuardarGrafo(grafo, dialog.FileName);
+        MessageBox.Show("Grafo guardado correctamente.", "Exito",
+            MessageBoxButton.OK, MessageBoxImage.Information);
+    }
+
+    private void BtnAyuda_Click(object sender, RoutedEventArgs e)
+    {
+        var ventana = new VentanaAyuda();
+        ventana.Owner = this;
+        ventana.ShowDialog();
+    }
+
+    private void BtnCerrarInfo_Click(object sender, RoutedEventArgs e)
+    {
+        _vm.LimpiarSeleccion();
+    }
 }

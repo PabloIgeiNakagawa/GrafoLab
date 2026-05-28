@@ -15,13 +15,16 @@ public enum ModoEditor
     AgregarVertice,
     AgregarArista,
     Mover,
-    Eliminar
+    Eliminar,
+    EliminarArista
 }
 
 public class EditorGrafoViewModel : INotifyPropertyChanged
 {
     private ModoEditor _modoActual = ModoEditor.Seleccionar;
     private VerticeVM? _origenArista;
+    private VerticeVM? _verticeSeleccionado;
+    private AristaVM? _aristaSeleccionada;
     private AlgoritmoInfo? _algoritmoSeleccionado;
     private string _resultado = "";
     private bool _ejecutando;
@@ -48,8 +51,61 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
         {
             _modoActual = value;
             CancelarCreacionArista();
+            LimpiarSeleccion();
             OnPropertyChanged();
             OnPropertyChanged(nameof(StatusText));
+        }
+    }
+
+    public VerticeVM? VerticeSeleccionado
+    {
+        get => _verticeSeleccionado;
+        set
+        {
+            _verticeSeleccionado = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(InfoTexto));
+            OnPropertyChanged(nameof(InfoVisible));
+        }
+    }
+
+    public AristaVM? AristaSeleccionada
+    {
+        get => _aristaSeleccionada;
+        set
+        {
+            _aristaSeleccionada = value;
+            OnPropertyChanged();
+            OnPropertyChanged(nameof(InfoTexto));
+            OnPropertyChanged(nameof(InfoVisible));
+        }
+    }
+
+    public bool InfoVisible => VerticeSeleccionado != null || AristaSeleccionada != null;
+
+    public string InfoTexto
+    {
+        get
+        {
+            if (VerticeSeleccionado != null)
+            {
+                var v = VerticeSeleccionado;
+                var vecinos = AristasVisibles
+                    .Where(a => a.Origen == v || a.Destino == v)
+                    .Select(a => a.Origen == v ? a.Destino.NumVertice : a.Origen.NumVertice)
+                    .OrderBy(n => n);
+                var grado = vecinos.Count();
+                var vecinosStr = grado > 0 ? string.Join(", ", vecinos) : "ninguno";
+                return $"Vértice {v.NumVertice} — Vecinos: [{vecinosStr}] — Grado: {grado} — Pos: ({v.X:F0}, {v.Y:F0})";
+            }
+            if (AristaSeleccionada != null)
+            {
+                var a = AristaSeleccionada;
+                var dir = a.EsDirigida ? "Dirigida" : "No dirigida";
+                var peso = a.TienePeso ? $" — Peso: {a.Peso:0.##}" : "";
+                return $"Arista {a.Origen.NumVertice} → {a.Destino.NumVertice} — {dir}{peso}";
+            }
+            return "";
         }
     }
 
@@ -95,6 +151,7 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
                     : "Seleccione el vertice origen",
                 ModoEditor.Mover => "Arrastre un vertice para moverlo",
                 ModoEditor.Eliminar => "Haga clic en un vertice para eliminarlo",
+                ModoEditor.EliminarArista => "Haga clic sobre una arista para eliminarla",
                 _ => ""
             };
             return $"Modo: {modo}";
@@ -118,6 +175,26 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
         var vm = new VerticeVM { X = x, Y = y, NumVertice = VerticesVisibles.Count };
         VerticesVisibles.Add(vm);
         OnPropertyChanged(nameof(CantidadVertices));
+    }
+
+    public void SeleccionarVertice(VerticeVM vertice)
+    {
+        if (ModoActual != ModoEditor.Seleccionar) return;
+        VerticeSeleccionado = vertice;
+        AristaSeleccionada = null;
+    }
+
+    public void SeleccionarArista(AristaVM arista)
+    {
+        if (ModoActual != ModoEditor.Seleccionar) return;
+        AristaSeleccionada = arista;
+        VerticeSeleccionado = null;
+    }
+
+    public void LimpiarSeleccion()
+    {
+        VerticeSeleccionado = null;
+        AristaSeleccionada = null;
     }
 
     public void IniciarCreacionArista(VerticeVM vertice)
@@ -153,6 +230,23 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
         }
     }
 
+    public void EliminarArista(AristaVM arista)
+    {
+        if (ModoActual != ModoEditor.EliminarArista) return;
+
+        var result = MessageBox.Show(
+            "¿Está seguro de que desea eliminar esta arista?",
+            "Confirmar eliminación",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result == MessageBoxResult.Yes)
+        {
+            AristasVisibles.Remove(arista);
+            OnPropertyChanged(nameof(CantidadAristas));
+        }
+    }
+
     public void MoverVertice(VerticeVM vertice, double x, double y)
     {
         vertice.X = x;
@@ -162,6 +256,14 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
     public void EliminarVertice(VerticeVM vertice)
     {
         if (ModoActual != ModoEditor.Eliminar) return;
+
+        var result = MessageBox.Show(
+            "¿Está seguro de que desea eliminar este vértice y todas sus aristas?",
+            "Confirmar eliminación",
+            MessageBoxButton.YesNo,
+            MessageBoxImage.Question);
+
+        if (result != MessageBoxResult.Yes) return;
 
         var aristasAEliminar = AristasVisibles
             .Where(a => a.Origen == vertice || a.Destino == vertice)
@@ -187,8 +289,13 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
         if (AlgoritmoSeleccionado == null) return;
 
         var grafo = ConstruirGrafo();
-        if (grafo == null) return;
 
+        if (grafo == null)
+        {
+            Resultado = "No hay grafos en el editor para ejecutar algoritmos.";
+            Ejecutando = false;
+            return;
+        }
         MostrarBanner = true;
         OnPropertyChanged(nameof(AlgoritmoNombre));
         Ejecutando = true;
@@ -250,10 +357,79 @@ public class EditorGrafoViewModel : INotifyPropertyChanged
         int n = VerticesVisibles.Count;
         var grafo = new Grafo(n);
 
+        for (int i = 0; i < n; i++)
+        {
+            grafo.GetVertice(i).X = VerticesVisibles[i].X;
+            grafo.GetVertice(i).Y = VerticesVisibles[i].Y;
+        }
+
         foreach (var arista in AristasVisibles)
             grafo.AgregarArista(arista.Origen.NumVertice, arista.Destino.NumVertice, arista.Peso, arista.EsDirigida);
 
         return grafo;
+    }
+
+    public void CargarDesdeGrafo(Grafo grafo)
+    {
+        LimpiarSeleccion();
+        VerticesVisibles.Clear();
+        AristasVisibles.Clear();
+
+        int n = grafo.Tamano();
+        const double centro = 2000;
+        const double radio = 150;
+
+        for (int i = 0; i < n; i++)
+        {
+            double angulo = 2.0 * Math.PI * i / n;
+            var v = grafo.GetVertice(i);
+            VerticesVisibles.Add(new VerticeVM
+            {
+                NumVertice = i,
+                X = v.X ?? centro + radio * Math.Cos(angulo),
+                Y = v.Y ?? centro + radio * Math.Sin(angulo)
+            });
+        }
+
+        for (int i = 0; i < n; i++)
+        {
+            for (int j = i + 1; j < n; j++)
+            {
+                bool existeIJ = grafo.ExisteArista(i, j);
+                bool existeJI = grafo.ExisteArista(j, i);
+
+                if (existeIJ && existeJI)
+                {
+                    var info = grafo.GetArista(i, j);
+                    AristasVisibles.Add(new AristaVM(VerticesVisibles[i], VerticesVisibles[j])
+                    {
+                        Peso = info?.Peso,
+                        EsDirigida = false
+                    });
+                }
+                else if (existeIJ)
+                {
+                    var info = grafo.GetArista(i, j);
+                    AristasVisibles.Add(new AristaVM(VerticesVisibles[i], VerticesVisibles[j])
+                    {
+                        Peso = info?.Peso,
+                        EsDirigida = true
+                    });
+                }
+                else if (existeJI)
+                {
+                    var info = grafo.GetArista(j, i);
+                    AristasVisibles.Add(new AristaVM(VerticesVisibles[j], VerticesVisibles[i])
+                    {
+                        Peso = info?.Peso,
+                        EsDirigida = true
+                    });
+                }
+            }
+        }
+
+        OnPropertyChanged(nameof(CantidadVertices));
+        OnPropertyChanged(nameof(CantidadAristas));
     }
 
     public event PropertyChangedEventHandler? PropertyChanged;
